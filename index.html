@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0f4c81" />
+<title>售后服务报告 Service Report</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<header class="app-header">
+  <div class="app-title">
+    <span class="cn">售后服务报告</span>
+    <span class="en">Service Report</span>
+  </div>
+  <nav class="tab-nav">
+    <button class="tab-btn active" data-view="form-view">新建 New</button>
+    <button class="tab-btn" data-view="history-view">历史 History</button>
+  </nav>
+</header>
+
+<main id="app-main">
+
+<!-- ================= 新建报告表单 New Report Form ================= -->
+<section id="form-view" class="view active">
+  <form id="report-form" novalidate>
+
+    <fieldset class="card">
+      <legend>公司 / Company</legend>
+      <div class="field required">
+        <label>服务公司 Company <span class="req-star">*</span></label>
+        <select id="companyId" required>
+          <option value="">请选择 Please select</option>
+        </select>
+      </div>
+      <div class="field required">
+        <label>参与工程师 Engineer(s) <span class="req-star">*</span></label>
+        <div id="engineerChecks" class="checkbox-group"></div>
+        <p class="hint">报告编号将以第一位勾选的工程师缩写生成；最终仅需1人签字 / Report number uses the first checked engineer's initials; only one signature is required.</p>
+      </div>
+      <div class="field readonly-field">
+        <label>服务报告编号 Report No.</label>
+        <input type="text" id="reportNo" readonly placeholder="选择公司与工程师后自动生成 / Auto-generated" />
+      </div>
+    </fieldset>
+
+    <fieldset class="card">
+      <legend>客户信息 Customer Info</legend>
+      <div class="field required">
+        <label>Customer 用户 <span class="req-star">*</span></label>
+        <input type="text" id="customer" required />
+      </div>
+      <div class="field optional">
+        <label>Dept/Add. 地址</label>
+        <input type="text" id="deptAdd" />
+      </div>
+      <div class="field required">
+        <label>Operator 负责人 <span class="req-star">*</span></label>
+        <input type="text" id="operator" required />
+      </div>
+      <div class="field optional">
+        <label>Phone No. 电话</label>
+        <input type="tel" id="mobile" />
+      </div>
+      <div class="field optional">
+        <label>Email 邮箱</label>
+        <input type="email" id="email" />
+      </div>
+      <div class="field optional">
+        <label>Province 省份</label>
+        <input type="text" id="province" />
+      </div>
+    </fieldset>
+
+    <fieldset class="card">
+      <legend>仪器信息 Instrument Info</legend>
+      <div class="field required">
+        <label>Model 仪器型号 <span class="req-star">*</span></label>
+        <input type="text" id="model" required />
+      </div>
+      <div class="field optional">
+        <label>Serial No. 序号</label>
+        <input type="text" id="serialNo" />
+      </div>
+      <div class="field optional">
+        <label>Computer 计算机</label>
+        <input type="text" id="computer" />
+      </div>
+      <div class="field optional">
+        <label>Serv.Tag 服务号</label>
+        <input type="text" id="servTag" />
+      </div>
+      <div class="field optional">
+        <label>Software 软件</label>
+        <input type="text" id="software" />
+      </div>
+      <div class="field optional">
+        <label>Operator System 操作系统</label>
+        <input type="text" id="os" />
+      </div>
+      <div class="field optional">
+        <label>Contract # 合同编号</label>
+        <input type="text" id="contractNo" />
+      </div>
+      <div class="field optional">
+        <label>Notification 派工号</label>
+        <input type="text" id="notification" />
+      </div>
+    </fieldset>
+
+    <fieldset class="card">
+      <legend>服务类型 Service Type</legend>
+      <div class="checkbox-group" id="serviceTypeChecks">
+        <label><input type="checkbox" name="serviceType" value="Installation 安装" /> Installation 安装</label>
+        <label><input type="checkbox" name="serviceType" value="Warranty 保内" /> Warranty 保内</label>
+        <label><input type="checkbox" name="serviceType" value="Beyond Warranty 保外" /> Beyond Warranty 保外</label>
+        <label><input type="checkbox" name="serviceType" value="Service Contract 服务合同" /> Service Contract 服务合同</label>
+        <label><input type="checkbox" name="serviceType" value="Others 其它" /> Others 其它</label>
+      </div>
+    </fieldset>
+
+    <fieldset class="card">
+      <legend>问题与服务内容 Issue &amp; Action</legend>
+      <div class="field required">
+        <label>Issue or Problem 项目或问题 <span class="req-star">*</span></label>
+        <textarea id="issue" rows="3" required></textarea>
+      </div>
+      <div class="field required">
+        <label>Action Taken 服务内容 <span class="req-star">*</span></label>
+        <textarea id="actionTaken" rows="4" required></textarea>
+      </div>
+    </fieldset>
+
+    <fieldset class="card">
+      <legend>时间节点 Time Log</legend>
+      <div class="field required">
+        <label>Order Received Date 接受任务时间 <span class="req-star">*</span></label>
+        <input type="datetime-local" id="orderReceivedDate" required />
+      </div>
+      <div class="field required">
+        <label>Start Travel Date 出发时间 <span class="req-star">*</span></label>
+        <input type="datetime-local" id="startTravelDate" required />
+      </div>
+      <div class="field required">
+        <label>On Site Date 到达现场时间 <span class="req-star">*</span></label>
+        <input type="datetime-local" id="onSiteDate" required />
+      </div>
+      <div class="field readonly-field">
+        <label>Travel Time 总旅途时间(小时) — 自动计算 Auto</label>
+        <input type="text" id="travelTime" readonly placeholder="由到达/出发时间自动计算" />
+      </div>
+      <div class="field required">
+        <label>Working Date (Start) 工作时间(开始) <span class="req-star">*</span></label>
+        <input type="datetime-local" id="workStart" required />
+      </div>
+      <div class="field required">
+        <label>Working Date (End) 工作时间(结束) <span class="req-star">*</span></label>
+        <input type="datetime-local" id="workEnd" required />
+      </div>
+      <div class="field readonly-field">
+        <label>Total Working Hours 总工作时间(小时) — 自动计算 Auto</label>
+        <input type="text" id="totalWorkingHours" readonly placeholder="由工作开始/结束时间自动计算" />
+      </div>
+      <div class="field optional">
+        <label>Total Support Hours 应用支持时间(小时)</label>
+        <input type="number" step="0.1" min="0" id="totalSupportHours" />
+      </div>
+      <div class="field optional">
+        <label>Waiting Hours 等待客户时间(小时)</label>
+        <input type="number" step="0.1" min="0" id="waitingHours" />
+      </div>
+    </fieldset>
+
+    <fieldset class="card">
+      <legend>结果与建议 Results &amp; Advice</legend>
+      <div class="field required">
+        <label>Results 结果 <span class="req-star">*</span></label>
+        <textarea id="results" rows="3" required></textarea>
+      </div>
+      <div class="field optional">
+        <label>Engineer's Advice 工程师建议</label>
+        <textarea id="engineerAdvice" rows="3"></textarea>
+      </div>
+    </fieldset>
+
+    <fieldset class="card">
+      <legend>备件 Spare Parts <span class="tag-optional">选填 Optional</span></legend>
+      <div id="partsTable"></div>
+      <button type="button" id="addPartRow" class="btn-secondary">+ 添加备件 Add Part</button>
+    </fieldset>
+
+    <fieldset class="card">
+      <legend>费用 Fees</legend>
+      <div class="fee-row">
+        <span class="fee-label">备件费合计 Parts Total</span>
+        <span id="partsFeeTotal" class="fee-value">¥0.00</span>
+      </div>
+      <div class="field optional">
+        <label>工时费 Labor — 数量(小时) Hours</label>
+        <input type="number" step="0.1" min="0" id="laborHours" value="0" />
+      </div>
+      <div class="field optional">
+        <label>工时费 Labor — 单价 Rate (¥/小时)</label>
+        <input type="number" step="0.01" min="0" id="laborRate" value="0" />
+      </div>
+      <div class="fee-row">
+        <span class="fee-label">工时费合计 Labor Total</span>
+        <span id="laborFeeTotal" class="fee-value">¥0.00</span>
+      </div>
+      <div class="field optional">
+        <label>上门费 Basic Price (¥)</label>
+        <input type="number" step="0.01" min="0" id="basicPrice" value="0" />
+      </div>
+      <div class="field optional">
+        <label>税率 Tax Rate</label>
+        <select id="taxRate">
+          <option value="0">0%</option>
+          <option value="0.01">1%</option>
+          <option value="0.06">6%</option>
+          <option value="0.13" selected>13%</option>
+        </select>
+      </div>
+      <div class="field optional checkbox-inline">
+        <label><input type="checkbox" id="byContract" /> 按照合同约定付费 Pay as per contract</label>
+      </div>
+      <div class="fee-row total-row">
+        <span class="fee-label">总费用 Total to be billed</span>
+        <span id="grandTotal" class="fee-value">¥0.00</span>
+      </div>
+    </fieldset>
+
+    <fieldset class="card">
+      <legend>图片附件 Photo Attachments <span class="tag-optional">选填 Optional</span></legend>
+      <input type="file" id="photoInput" accept="image/*" capture="environment" multiple />
+      <div id="photoPreview" class="photo-grid"></div>
+    </fieldset>
+
+    <div class="form-actions">
+      <button type="button" id="proceedToSignBtn" class="btn-primary">下一步：签字 Next: Sign</button>
+    </div>
+
+  </form>
+</section>
+
+<!-- ================= 签字页1：工程师签字 Signature View 1: Engineer ================= -->
+<section id="sign-engineer-view" class="view">
+  <div class="card">
+    <h3>工程师签字人 Signing Engineer <span class="req-star">*</span></h3>
+    <select id="signingEngineer"></select>
+    <h3>工程师签字 Engineer Signature <span class="req-star">*</span></h3>
+    <p class="hint">可将手机横向旋转以获得更大签字区域 / Rotate your phone to landscape for a larger signing area.</p>
+    <canvas id="engineerSignaturePad" class="sig-pad"></canvas>
+    <div class="sig-actions">
+      <button type="button" class="btn-secondary" data-clear="engineerSignaturePad">清除 Clear</button>
+    </div>
+  </div>
+  <div class="form-actions">
+    <button type="button" id="backToFormBtn" class="btn-secondary">返回 Back</button>
+    <button type="button" id="engineerNextBtn" class="btn-primary">下一步：客户签字 Next: Customer</button>
+  </div>
+</section>
+
+<!-- ================= 签字页2：客户签字 Signature View 2: Customer ================= -->
+<section id="sign-customer-view" class="view">
+  <div class="card">
+    <h3>客户签字 Customer Signature <span class="req-star">*</span></h3>
+    <p class="hint">可将手机横向旋转以获得更大签字区域 / Rotate your phone to landscape for a larger signing area.</p>
+    <canvas id="customerSignaturePad" class="sig-pad"></canvas>
+    <div class="sig-actions">
+      <button type="button" class="btn-secondary" data-clear="customerSignaturePad">清除 Clear</button>
+    </div>
+  </div>
+  <p class="hint">签字日期将自动记录为当前时间（含时间戳）/ Signature date is recorded automatically with a timestamp.</p>
+  <div class="form-actions">
+    <button type="button" id="backToEngineerSignBtn" class="btn-secondary">返回 Back</button>
+    <button type="button" id="completeSignBtn" class="btn-primary">完成签字并生成报告 Complete &amp; Generate</button>
+  </div>
+</section>
+
+<!-- ================= 报告预览/打印模板 Preview / Print Template ================= -->
+<section id="preview-view" class="view">
+  <div class="form-actions preview-toolbar">
+    <button type="button" id="backToHistoryBtn" class="btn-secondary">返回 Back</button>
+    <button type="button" id="exportPdfBtn" class="btn-primary">导出PDF Export PDF</button>
+    <button type="button" id="exportImgBtn" class="btn-primary">导出图片 Export Image</button>
+    <button type="button" id="shareBtn" class="btn-primary">分享 Share</button>
+  </div>
+  <div id="printRoot"></div>
+</section>
+
+<!-- ================= 历史报告 History View ================= -->
+<section id="history-view" class="view">
+  <div id="historyList" class="card"></div>
+</section>
+
+</main>
+
+<script src="vendor/signature_pad.umd.min.js"></script>
+<script src="vendor/html2canvas.min.js"></script>
+<script src="vendor/jspdf.umd.min.js"></script>
+<script src="js/company-data.js"></script>
+<script src="js/db.js"></script>
+<script src="js/report-number.js"></script>
+<script src="js/template-render.js"></script>
+<script src="js/sync-config.js"></script>
+<script src="js/sync.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

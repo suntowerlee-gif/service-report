@@ -1,0 +1,358 @@
+:root {
+  --primary: #0f4c81;
+  --primary-dark: #0a3a63;
+  --danger: #c0392b;
+  --warn-bg: #fff6d8;
+  --warn-border: #e6c229;
+  --req-bg: #fdecea;
+  --req-border: #e0857a;
+  --border: #d9dee3;
+  --bg: #f4f6f8;
+  --card-bg: #ffffff;
+  --text: #1f2a33;
+  --muted: #6b7680;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--primary);
+  color: #fff;
+  padding: 10px 14px calc(6px + env(safe-area-inset-top));
+  padding-top: calc(10px + env(safe-area-inset-top));
+}
+
+.app-title { font-size: 15px; font-weight: 600; display: flex; gap: 6px; align-items: baseline; }
+.app-title .en { font-size: 12px; opacity: 0.85; font-weight: 400; }
+
+.tab-nav { display: flex; gap: 8px; margin-top: 8px; }
+.tab-btn {
+  flex: 1;
+  background: rgba(255,255,255,0.12);
+  border: none;
+  color: #fff;
+  padding: 8px 4px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.tab-btn.active { background: #fff; color: var(--primary); font-weight: 600; }
+
+#app-main { padding: 12px; max-width: 720px; margin: 0 auto; }
+
+.view { display: none; }
+.view.active { display: block; }
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+fieldset.card { border: 1px solid var(--border); }
+legend {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0 4px;
+  color: var(--primary-dark);
+}
+
+.tag-optional {
+  font-size: 11px;
+  font-weight: 400;
+  color: #9a7d00;
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  margin-left: 6px;
+}
+
+.field { margin: 10px 0; }
+.field label {
+  display: block;
+  font-size: 12.5px;
+  margin-bottom: 4px;
+  color: var(--muted);
+}
+.field.required label { color: var(--danger); font-weight: 600; }
+.req-star { color: var(--danger); }
+
+.field input,
+.field textarea,
+.field select {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fff;
+  color: var(--text);
+}
+
+.field.required input,
+.field.required textarea,
+.field.required select {
+  background: var(--req-bg);
+  border-color: var(--req-border);
+}
+
+.field.optional input,
+.field.optional textarea,
+.field.optional select {
+  background: var(--warn-bg);
+  border-color: var(--warn-border);
+}
+
+.field.readonly-field input {
+  background: #eef1f3;
+  color: var(--muted);
+}
+
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  background: #eef3f8;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+
+.checkbox-inline label { display: flex; align-items: center; gap: 8px; }
+
+.hint { font-size: 11.5px; color: var(--muted); margin: 4px 0 0; }
+
+select#companyId, select#taxRate, select#signingEngineer {
+  width: 100%;
+}
+
+.btn-primary, .btn-secondary {
+  border: none;
+  border-radius: 9px;
+  padding: 11px 16px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.btn-primary { background: var(--primary); color: #fff; flex: 1; }
+.btn-secondary { background: #e5e9ec; color: var(--text); flex: 1; }
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin: 16px 0 40px;
+}
+
+.preview-toolbar { flex-wrap: wrap; }
+.preview-toolbar button { flex: 1 1 40%; }
+
+/* 备件表 Parts table */
+#partsTable { display: flex; flex-direction: column; gap: 8px; }
+.part-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  gap: 6px;
+  align-items: center;
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-border);
+  border-radius: 8px;
+  padding: 6px;
+}
+.part-row input { padding: 7px 6px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px; }
+.part-row .remove-part {
+  background: var(--danger);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+}
+.part-row-label { font-size: 10.5px; color: var(--muted); grid-column: 1 / -1; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 6px; }
+
+.fee-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 4px;
+  border-bottom: 1px dashed var(--border);
+  font-size: 13.5px;
+}
+.fee-row.total-row {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary-dark);
+  border-bottom: none;
+  border-top: 2px solid var(--primary);
+  margin-top: 4px;
+}
+.fee-label { color: var(--muted); }
+.fee-row.total-row .fee-label { color: var(--primary-dark); }
+
+.photo-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.photo-thumb { position: relative; width: 84px; height: 84px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+.photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo-thumb .remove-photo {
+  position: absolute; top: 2px; right: 2px;
+  background: rgba(0,0,0,0.6); color: #fff; border: none;
+  width: 20px; height: 20px; border-radius: 50%; font-size: 12px; line-height: 1;
+}
+
+.sig-pad {
+  width: 100%;
+  height: 180px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  background: #fff;
+  touch-action: none;
+}
+.sig-actions { margin-top: 8px; display: flex; gap: 8px; }
+
+/* ============ 打印/预览模板样式 Print template（紧凑，尽量单页A4） ============ */
+/* 报告固定按A4宽度排版（约794px@96dpi），不随手机屏幕宽度收窄为单列，
+   保证导出的PDF/图片始终是双栏紧凑布局；手机上预览可左右滑动查看。
+   Fixed to A4-like width (~794px@96dpi) regardless of phone viewport, so the
+   exported PDF/image always keeps the compact two-column layout; on a phone
+   the preview scrolls horizontally. */
+#printRoot { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.report-doc {
+  background: #fff;
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  font-size: 10px;
+  line-height: 1.35;
+  color: #111;
+  width: 794px;
+  box-sizing: border-box;
+}
+.report-doc table { width: 100%; border-collapse: collapse; margin: 3px 0; }
+.report-doc th, .report-doc td {
+  border: 1px solid #999;
+  padding: 2px 5px;
+  font-size: 9.5px;
+  text-align: left;
+  vertical-align: top;
+}
+
+/* 顶部一行：左Logo，右标题，水平对齐 / Top row: logo left, title right, aligned */
+.report-doc .doc-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 4px;
+}
+.report-doc .company-logo { height: 18px; width: auto; display: block; }
+.report-doc .company-logo-placeholder { height: 18px; }
+.report-doc .doc-title { font-size: 15px; margin: 0; color: var(--primary-dark); }
+
+.report-doc .doc-header {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 2px solid var(--primary);
+  padding-bottom: 5px;
+  margin-bottom: 5px;
+  gap: 10px;
+}
+.report-doc .doc-header .company-block { font-size: 9.5px; }
+.report-doc .doc-header .meta-block { font-size: 9.5px; text-align: right; }
+.report-doc .fill-blank-empty { display: inline-block; min-width: 55px; border-bottom: 1px solid #999; padding: 0 2px; }
+.report-doc .fill-blank-filled { display: inline; }
+
+.report-doc .section-title {
+  background: var(--primary);
+  color: #fff;
+  font-size: 9.5px;
+  font-weight: 600;
+  padding: 2px 7px;
+  margin: 5px 0 3px;
+  border-radius: 3px;
+}
+
+/* 左右两栏布局 / Two-column layout */
+.report-doc .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: start; }
+/* 问题服务内容/时间节点这一行：时间节点列仅按内容自身宽度收缩，多余空间让给左侧问题服务内容
+   Issue&Action / Time-log row: the time-log column shrinks to fit its content, extra width goes to the left column */
+.report-doc .two-col-timelog { grid-template-columns: 1fr auto; align-items: stretch; }
+.report-doc .two-col-timelog > .col:last-child { width: max-content; min-width: 150px; }
+/* 左列（问题与服务内容）与其容器一起拉伸到与右列（时间节点）等高；
+   Action Taken 这一格用 flex:1 吸收多出来的高度差，内容多时自然可以更高，不会被压缩
+   Left column stretches to match the right column's height; the Action Taken row absorbs
+   any extra space via flex:1, and simply grows further if its own content needs more room */
+.report-doc .two-col-timelog > .col { display: flex; flex-direction: column; }
+.report-doc .two-col-timelog > .col:first-child .kv-stack { flex: 1; display: flex; flex-direction: column; }
+.report-doc .two-col-timelog > .col:first-child .kv-stack .kv.grow { flex: 1; }
+.report-doc .kv-stack { display: flex; flex-direction: column; gap: 0; border: 1px solid #ccc; border-top: none; }
+.report-doc .kv { display: flex; border-top: 1px solid #ccc; padding: 2px 5px; gap: 4px; }
+.report-doc .kv.block { flex-direction: column; gap: 1px; }
+.report-doc .kv .k { color: #555; font-size: 8.5px; flex: 0 0 auto; white-space: nowrap; }
+.report-doc .kv.block .k { white-space: normal; }
+.report-doc .kv .v { font-weight: 600; word-break: break-word; overflow-wrap: break-word; }
+.report-doc .kv.block .v { white-space: pre-wrap; }
+
+/* 时间节点紧凑表格：按内容自身宽度收缩，不拉伸铺满 / Compact time-log table: sized to its own content, not stretched */
+.report-doc .compact-table { width: auto; table-layout: auto; }
+.report-doc .compact-table td { font-size: 9px; padding: 1.5px 6px; white-space: nowrap; }
+.report-doc .compact-table .k { color: #555; }
+.report-doc .compact-table .v { font-weight: 600; text-align: right; }
+
+.report-doc .parts-total-line { text-align: right; font-size: 10px; font-weight: 700; margin: 2px 0 4px; color: var(--primary-dark); }
+
+.report-doc .checks span { display: inline-block; margin-right: 8px; font-size: 9.5px; }
+.report-doc .checks .checked::before { content: "☑ "; }
+.report-doc .checks .unchecked::before { content: "☐ "; }
+
+.report-doc .sign-block { display: flex; justify-content: space-between; margin-top: 8px; gap: 16px; }
+.report-doc .sign-col { flex: 1; text-align: center; }
+.report-doc .sign-col img { max-height: 50px; border-bottom: 1px solid #999; }
+.report-doc .sign-col .sign-blank { height: 50px; border-bottom: 1px solid #999; }
+.report-doc .sign-col .sign-meta { font-size: 9px; color: #555; margin-top: 3px; }
+
+.report-doc .photos { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+.report-doc .photos img { width: 70px; height: 70px; object-fit: cover; border: 1px solid #ccc; }
+
+.report-doc .bank-footer { font-size: 9px; margin-top: 6px; border-top: 1px solid #ccc; padding-top: 4px; display: flex; justify-content: space-between; gap: 10px; }
+.report-doc .total-line { text-align: right; font-size: 12px; font-weight: 700; margin-top: 4px; color: var(--primary-dark); }
+
+/* History list */
+.history-item {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fafcfd;
+}
+.history-item .hi-main { font-size: 13.5px; font-weight: 600; }
+.sync-badge { font-size: 10.5px; font-weight: 500; border-radius: 8px; padding: 1px 7px; margin-left: 6px; display: inline-block; vertical-align: middle; }
+.sync-badge.synced { background: #e6f4ea; color: #1e7a34; }
+.sync-badge.pending { background: #fff6d8; color: #9a7d00; }
+.history-item .hi-sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+.history-item button { background: var(--primary); color: #fff; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; }
+.empty-state { color: var(--muted); font-size: 13px; text-align: center; padding: 30px 0; }
+
+@media (min-width: 600px) {
+  .part-row { grid-template-columns: 2fr 1fr 1fr 1fr auto; }
+}

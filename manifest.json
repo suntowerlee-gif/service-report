@@ -1,0 +1,16 @@
+{
+  "name": "售后服务报告 Service Report",
+  "short_name": "服务报告",
+  "description": "无纸化移动端售后服务报告工具，离线本地优先，支持电子签名与PDF/图片导出",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f4f6f8",
+  "theme_color": "#0f4c81",
+  "lang": "zh-CN",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
