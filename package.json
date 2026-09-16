@@ -1,0 +1,20 @@
+{
+  "name": "service-report-pwa",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
+    "signature_pad": "^5.1.4"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}

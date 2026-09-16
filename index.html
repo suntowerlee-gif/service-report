@@ -276,6 +276,10 @@
       <button type="button" class="btn-secondary" data-clear="customerSignaturePad">清除 Clear</button>
     </div>
   </div>
+  <p class="hint">客户签字前建议先预览报告全部内容，确认无误后再签字 / Before signing, please preview the full report and confirm everything is correct.</p>
+  <div class="form-actions">
+    <button type="button" id="previewReportBtn" class="btn-secondary">预览报告 Preview Report</button>
+  </div>
   <p class="hint">签字日期将自动记录为当前时间（含时间戳）/ Signature date is recorded automatically with a timestamp.</p>
   <div class="form-actions">
     <button type="button" id="backToEngineerSignBtn" class="btn-secondary">返回 Back</button>
@@ -285,7 +289,13 @@
 
 <!-- ================= 报告预览/打印模板 Preview / Print Template ================= -->
 <section id="preview-view" class="view">
-  <div class="form-actions preview-toolbar">
+  <!-- 客户签字前的核对预览：只用于查看内容，不提供导出，看完返回签字，或工程师退回重新填写 -->
+  <!-- Draft preview shown before the customer signs: view-only, no export; back to signing, or return to edit -->
+  <div class="form-actions preview-toolbar draft-toolbar" style="display:none;">
+    <button type="button" id="draftReturnToEditBtn" class="btn-secondary">内容有误，退回重新填写 Return to Edit</button>
+    <button type="button" id="draftBackToSignBtn" class="btn-primary">内容确认无误，返回签字 Confirm &amp; Back to Sign</button>
+  </div>
+  <div class="form-actions preview-toolbar final-toolbar">
     <button type="button" id="backToHistoryBtn" class="btn-secondary">返回 Back</button>
     <button type="button" id="exportPdfBtn" class="btn-primary">导出PDF Export PDF</button>
     <button type="button" id="exportImgBtn" class="btn-primary">导出图片 Export Image</button>

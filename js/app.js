@@ -339,23 +339,13 @@
     requestAnimationFrame(() => resizeSignaturePad($("#customerSignaturePad"), customerPad));
   }
 
-  async function onCompleteSign() {
-    if (customerPad.isEmpty()) {
-      alert("请客户完成签字 / Customer signature is required.");
-      return;
-    }
-    if (engineerPad.isEmpty()) {
-      alert("工程师签字缺失，请返回上一步重新签字 / Engineer signature missing, please go back.");
-      return;
-    }
-    const now = new Date().toISOString();
+  // 采集表单当前内容，供“最终生成报告”和“签字前预览草稿”共用，避免两处重复维护字段列表
+  // Collects the current form content, shared by both "final generate" and "pre-sign draft preview" so the field list is only maintained in one place
+  function collectReportFields() {
     const fees = recalcFees();
     const companyId = $("#companyId").value;
     const engineersChecked = $all('input[name="engineer"]:checked').map((c) => c.value);
-
-    const report = {
-      id: draftReportNo,
-      reportNo: draftReportNo,
+    return {
       companyId,
       engineers: engineersChecked,
       signingEngineer: $("#signingEngineer").value,
@@ -396,7 +386,47 @@
       taxRate: fees.taxRate,
       byContract: $("#byContract").checked,
       grandTotal: fees.grand,
-      photos: photos.slice(),
+      photos: photos.slice()
+    };
+  }
+
+  // 客户签字前的预览草稿：不要求签字齐全，不落库，仅供内容核对
+  // Pre-sign draft preview: doesn't require signatures, isn't saved, just for content review
+  function onPreviewReport() {
+    const now = new Date().toISOString();
+    const draft = Object.assign({}, collectReportFields(), {
+      id: draftReportNo || "DRAFT",
+      reportNo: draftReportNo || "（未生成 / not yet generated）",
+      customerSignature: "", // 客户此时还未签字 / customer hasn't signed yet at this point
+      customerSignedAt: "",
+      engineerSignature: engineerPad.isEmpty() ? "" : engineerPad.toDataURL("image/png"),
+      engineerSignedAt: engineerPad.isEmpty() ? "" : now,
+      locked: false
+    });
+    renderPreview(draft);
+    setPreviewMode("draft");
+    showView("preview-view");
+  }
+
+  function setPreviewMode(mode) {
+    $(".draft-toolbar").style.display = mode === "draft" ? "flex" : "none";
+    $(".final-toolbar").style.display = mode === "draft" ? "none" : "flex";
+  }
+
+  async function onCompleteSign() {
+    if (customerPad.isEmpty()) {
+      alert("请客户完成签字 / Customer signature is required.");
+      return;
+    }
+    if (engineerPad.isEmpty()) {
+      alert("工程师签字缺失，请返回上一步重新签字 / Engineer signature missing, please go back.");
+      return;
+    }
+    const now = new Date().toISOString();
+
+    const report = Object.assign({}, collectReportFields(), {
+      id: draftReportNo,
+      reportNo: draftReportNo,
       customerSignature: customerPad.toDataURL("image/png"),
       customerSignedAt: now,
       engineerSignature: engineerPad.toDataURL("image/png"),
@@ -404,12 +434,13 @@
       locked: true,
       synced: false,
       createdAt: now
-    };
+    });
 
     await saveReport(report);
     resetForm();
     currentPreviewId = report.id;
     renderPreview(report);
+    setPreviewMode("final");
     showView("preview-view");
     setActiveTabByView("history-view");
 
@@ -446,6 +477,23 @@
     $("#exportPdfBtn").addEventListener("click", exportPdf);
     $("#exportImgBtn").addEventListener("click", exportImage);
     $("#shareBtn").addEventListener("click", shareReport);
+
+    $("#previewReportBtn").addEventListener("click", onPreviewReport);
+    $("#draftBackToSignBtn").addEventListener("click", () => {
+      showView("sign-customer-view");
+      requestAnimationFrame(() => resizeSignaturePad($("#customerSignaturePad"), customerPad));
+    });
+    $("#draftReturnToEditBtn").addEventListener("click", () => {
+      const ok = confirm(
+        "退回重新填写后，工程师和客户已经签署的内容需要重新签字才能生效，确定要退回吗？\n" +
+        "Returning to edit will require both signatures to be redone. Continue?"
+      );
+      if (!ok) return;
+      engineerPad.clear();
+      customerPad.clear();
+      showView("form-view");
+      setActiveTabByView("form-view");
+    });
   }
 
   function renderPreview(report) {
@@ -534,6 +582,7 @@
         if (!r) return;
         currentPreviewId = r.id;
         renderPreview(r);
+        setPreviewMode("final");
         showView("preview-view");
       });
     });
