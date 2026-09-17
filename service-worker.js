@@ -1,5 +1,5 @@
 // 离线缓存 Service Worker：缓存全部应用资源，实现离线可用
-const CACHE_NAME = "service-report-cache-v4";
+const CACHE_NAME = "service-report-cache-v5";
 const ASSETS = [
   "./",
   "./index.html",
@@ -23,9 +23,13 @@ const ASSETS = [
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting())
-  );
+  // 新版本先在后台把新资源缓存好，但不立即接管页面，
+  // 等页面里的"立即更新"按钮被点击（收到 SKIP_WAITING 消息）后才切换。
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)));
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data === "SKIP_WAITING") self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {

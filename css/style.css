@@ -33,6 +33,35 @@ body {
   padding-top: calc(10px + env(safe-area-inset-top));
 }
 
+.update-banner {
+  position: sticky;
+  top: 0;
+  z-index: 11;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: #fff3cd;
+  color: #7a5c00;
+  border-bottom: 1px solid #f0d97a;
+  padding: 8px 14px;
+  font-size: 13px;
+}
+.update-banner-text {
+  flex: 1;
+}
+.update-banner-btn {
+  flex-shrink: 0;
+  border: none;
+  background: #7a5c00;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .app-title { font-size: 15px; font-weight: 600; display: flex; gap: 6px; align-items: baseline; }
 .app-title .en { font-size: 12px; opacity: 0.85; font-weight: 400; }
 

@@ -589,10 +589,62 @@
   }
 
   // ---------- PWA Service Worker ----------
+  function showUpdateBanner(worker) {
+    const banner = $("#updateBanner");
+    if (!banner) return;
+    banner.style.display = "flex";
+    $("#updateNowBtn").onclick = () => {
+      banner.style.display = "none";
+      worker.postMessage("SKIP_WAITING");
+    };
+  }
+
   function registerServiceWorker() {
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("service-worker.js").catch(() => {});
-    }
+    if (!("serviceWorker" in navigator)) return;
+
+    navigator.serviceWorker
+      .register("service-worker.js")
+      .then((reg) => {
+        // 已经有新版本装好在等待（比如上次刷新前没点更新）
+        if (reg.waiting) showUpdateBanner(reg.waiting);
+
+        // 发现新版本正在安装
+        reg.addEventListener("updatefound", () => {
+          const newWorker = reg.installing;
+          if (!newWorker) return;
+          newWorker.addEventListener("statechange", () => {
+            if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+              showUpdateBanner(newWorker);
+            }
+          });
+        });
+
+        // 每次页面回到前台时，主动去服务器问一下有没有新版本
+        // （否则浏览器不一定会自己检查，长时间挂着的页面/手机App可能一直用旧版）
+        document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "visible") reg.update().catch(() => {});
+        });
+        window.addEventListener("focus", () => reg.update().catch(() => {}));
+      })
+      .catch(() => {});
+
+    // 新Service Worker接管后，自动刷新一次页面，加载最新的文件。
+    // 注意：页面第一次安装Service Worker时（之前完全没有安装过），
+    // 激活阶段的 clients.claim() 也会触发一次 controllerchange，
+    // 这种情况不需要刷新（本来就是最新内容），只有"已经有旧版本在控制页面、
+    // 现在被新版本替换"这种真正的更新才需要刷新，否则会在用户填表填到一半时
+    // 突然把页面刷新掉、丢失正在填写的内容。
+    let hadController = !!navigator.serviceWorker.controller;
+    let refreshedOnce = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (!hadController) {
+        hadController = true;
+        return;
+      }
+      if (refreshedOnce) return;
+      refreshedOnce = true;
+      window.location.reload();
+    });
   }
 
   document.addEventListener("DOMContentLoaded", init);

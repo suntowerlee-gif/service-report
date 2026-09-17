@@ -8,9 +8,8 @@
 // the tool works fully without this, engineers just won't get automatic repo backup
 // and should keep exporting/forwarding manually (same as before this feature existed).
 const SYNC_CONFIG = {
-  // 部署Worker后，把它的访问地址填在这里，例如：
-  // "https://service-report-sync.your-subdomain.workers.dev"
-  // After deploying the Worker, put its URL here.
+  // 已填好你实际部署的Worker访问地址。
+  // Already filled in with your actually deployed Worker URL.
   endpoint: "https://service-report-sync.suntowerlee.workers.dev",
   // 已为你生成好的共享口令（不是GitHub密钥），部署Worker时把它原样填入
   // Worker的 APP_TOKEN 环境变量即可，两边必须完全一致。
