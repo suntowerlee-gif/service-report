@@ -1,5 +1,5 @@
 // 离线缓存 Service Worker：缓存全部应用资源，实现离线可用
-const CACHE_NAME = "service-report-cache-v3";
+const CACHE_NAME = "service-report-cache-v4";
 const ASSETS = [
   "./",
   "./index.html",
