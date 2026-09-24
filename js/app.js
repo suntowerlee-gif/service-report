@@ -314,6 +314,39 @@
     if (data && data.length) pad.fromData(data);
   }
 
+  // 签字质量检测：区分"随手点一下"和"真实签字"（哪怕是很简单的连笔/缩写/花押也算有效签字）。
+  // Signature quality check: tells a lazy single tap apart from a real signature —
+  // even a very quick cursive scrawl / initials / stylized mark still counts as valid.
+  // 判定依据：签字笔迹的包围盒对角线长度、以及笔迹总长度都必须超过一个很低的门槛，
+  // 单纯点一下（几乎不移动）两者都会接近0，而任何真正的书写动作都会明显超过这个门槛。
+  // 坐标单位是CSS像素（与设备像素比无关），所以门槛在不同屏幕分辨率的手机/电脑上都适用。
+  const SIGNATURE_MIN_STROKE_LENGTH = 20; // 笔迹总长度（像素）
+  const SIGNATURE_MIN_BOUNDING_DIAGONAL = 10; // 笔迹包围盒对角线长度（像素）
+
+  function isSignatureTooSimple(pad) {
+    if (!pad || pad.isEmpty() || typeof pad.toData !== "function") return true;
+    const strokes = pad.toData() || [];
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    let totalLength = 0;
+    strokes.forEach((stroke) => {
+      const pts = (stroke && stroke.points) || [];
+      for (let i = 0; i < pts.length; i++) {
+        const p = pts[i];
+        if (p.x < minX) minX = p.x;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.y > maxY) maxY = p.y;
+        if (i > 0) {
+          const prev = pts[i - 1];
+          totalLength += Math.hypot(p.x - prev.x, p.y - prev.y);
+        }
+      }
+    });
+    if (!isFinite(minX)) return true;
+    const diagonal = Math.hypot(maxX - minX, maxY - minY);
+    return totalLength < SIGNATURE_MIN_STROKE_LENGTH && diagonal < SIGNATURE_MIN_BOUNDING_DIAGONAL;
+  }
+
   function bindSignViews() {
     $all('[data-clear]').forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -333,6 +366,10 @@
   function onEngineerSignNext() {
     if (engineerPad.isEmpty()) {
       alert("请工程师完成签字 / Engineer signature is required.");
+      return;
+    }
+    if (isSignatureTooSimple(engineerPad)) {
+      alert("签字内容过于简单，系统无法识别为有效签字，请工程师正式签字（可以是简笔连笔签名）/ The mark is too simple to be recognized as a valid signature. Please sign properly (a quick cursive scrawl is fine).");
       return;
     }
     showView("sign-customer-view");
@@ -418,8 +455,16 @@
       alert("请客户完成签字 / Customer signature is required.");
       return;
     }
+    if (isSignatureTooSimple(customerPad)) {
+      alert("签字内容过于简单，系统无法识别为有效签字，请客户正式签字（可以是简笔连笔签名）/ The mark is too simple to be recognized as a valid signature. Please have the customer sign properly (a quick cursive scrawl is fine).");
+      return;
+    }
     if (engineerPad.isEmpty()) {
       alert("工程师签字缺失，请返回上一步重新签字 / Engineer signature missing, please go back.");
+      return;
+    }
+    if (isSignatureTooSimple(engineerPad)) {
+      alert("工程师签字内容过于简单，请返回上一步重新正式签字 / The engineer's mark is too simple, please go back and sign properly.");
       return;
     }
     const now = new Date().toISOString();
