@@ -338,6 +338,12 @@
 <!-- ================= 历史报告 History View ================= -->
 <section id="history-view" class="view">
   <div id="historyList" class="card"></div>
+  <!-- 当前实际生效的Service Worker缓存版本号，用来确认手机上跑的是不是最新版本
+       （不是看App里有没有新按钮这种间接方式，是直接读浏览器缓存的真实版本名）。
+       Shows the actually-active Service Worker cache name, so we can directly confirm
+       whether a phone is really running the latest version — not by guessing from
+       whether some new button appears, but by reading the real cache version. -->
+  <div id="buildInfo" class="build-info"></div>
 </section>
 
 </main>

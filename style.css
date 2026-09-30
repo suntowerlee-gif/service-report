@@ -62,6 +62,13 @@ body {
   cursor: pointer;
 }
 
+.build-info {
+  text-align: center;
+  color: #98a2ad;
+  font-size: 11px;
+  padding: 10px 0 24px;
+}
+
 .app-title { font-size: 15px; font-weight: 600; display: flex; gap: 6px; align-items: baseline; }
 .app-title .en { font-size: 12px; opacity: 0.85; font-weight: 400; }
 

@@ -28,9 +28,27 @@
     recalcFees();
     renderHistory();
     registerServiceWorker();
+    showBuildInfo();
     // App启动或恢复联网时，尝试把之前离线未同步成功的报告补传
     // On startup or when connectivity returns, retry any reports that failed to sync earlier
     if (window.ReportSync) ReportSync.retryPendingSync().then(() => renderHistory());
+  }
+
+  // 显示当前浏览器里实际生效的Service Worker缓存版本号，方便直接确认这台设备
+  // 是不是真的已经更新到最新版本，而不是靠"页面上有没有新按钮"这种间接判断。
+  // Shows the Service Worker cache name actually active in this browser right now,
+  // so we can directly confirm whether this device is really on the latest version,
+  // instead of guessing indirectly from whether some new UI element appears.
+  async function showBuildInfo() {
+    try {
+      if (!("caches" in window)) return;
+      const keys = await caches.keys();
+      const ours = keys.find((k) => k.indexOf("service-report-cache-") === 0);
+      const el = $("#buildInfo");
+      if (el) el.textContent = ours ? ("当前缓存版本 Build: " + ours) : "（尚无缓存 / no cache yet）";
+    } catch (e) {
+      // 忽略，纯展示用途，不影响任何实际功能 / display-only, never blocks real functionality
+    }
   }
 
   function populateCompanySelect() {
