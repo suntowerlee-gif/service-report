@@ -242,33 +242,7 @@
 
     <fieldset class="card">
       <legend>图片附件 Photo Attachments <span class="tag-optional">选填 Optional</span></legend>
-      <!-- 用<label for="...">而不是"按钮+JS点击隐藏输入框"来触发文件选择：
-           前一种做法（按钮的click事件里调用input.click()）在部分手机内置浏览器/WebView里
-           不可靠，不管输入框是display:none还是仅仅在视觉上隐藏，点击有时都没有反应；
-           而<label for>关联表单控件是浏览器原生支持的标准行为，不依赖JS转发点击，
-           不论输入框是否被隐藏、隐藏方式是什么，浏览器都会原生地把点击转发给它关联的
-           input，兼容性最好，这也是绝大多数自定义文件选择按钮的标准做法。
-           Using <label for="..."> instead of "button + JS click() on a hidden input" to
-           trigger file selection: the previous approach (calling input.click() from a
-           button's click handler) proved unreliable in some mobile in-app browsers/WebViews —
-           clicking sometimes did nothing, regardless of how the input was hidden. A <label for>
-           associated with a form control is native, standard browser behavior that doesn't rely
-           on JS-forwarded clicks at all; the browser itself delegates the click to the input no
-           matter how it's hidden. This is the standard, most compatible way to build a custom
-           file-picker button. -->
-      <div class="photo-add-actions">
-        <label for="photoInputCamera" id="takePhotoBtn" class="btn-secondary photo-label">📷 拍照 Take Photo</label>
-        <label for="photoInputGallery" id="choosePhotoBtn" class="btn-secondary photo-label">🖼️ 从相册选择 Choose from Album</label>
-      </div>
-      <!-- 两个独立的文件输入：一个强制拉起相机现场拍照，一个不带capture属性专门用于打开相册多选；
-           分开做是因为不同手机系统/浏览器对"同一个输入框能否既拍照又选相册"的支持并不一致，
-           拆成两个入口各自关联对应的输入框，才能保证两种方式都稳定可用。
-           Two separate file inputs: one forces the camera (capture), one has no capture attribute
-           and is used for picking from the photo library (supports multi-select). They're kept separate
-           because phones/browsers are inconsistent about offering both camera and gallery from a single
-           input, so two dedicated entry points each drive their own input for reliable behavior either way. -->
-      <input type="file" id="photoInputCamera" accept="image/*" capture="environment" class="visually-hidden-input" />
-      <input type="file" id="photoInputGallery" accept="image/*" multiple class="visually-hidden-input" />
+      <input type="file" id="photoInput" accept="image/*" capture="environment" multiple />
       <div id="photoPreview" class="photo-grid"></div>
     </fieldset>
 
@@ -338,12 +312,6 @@
 <!-- ================= 历史报告 History View ================= -->
 <section id="history-view" class="view">
   <div id="historyList" class="card"></div>
-  <!-- 当前实际生效的Service Worker缓存版本号，用来确认手机上跑的是不是最新版本
-       （不是看App里有没有新按钮这种间接方式，是直接读浏览器缓存的真实版本名）。
-       Shows the actually-active Service Worker cache name, so we can directly confirm
-       whether a phone is really running the latest version — not by guessing from
-       whether some new button appears, but by reading the real cache version. -->
-  <div id="buildInfo" class="build-info"></div>
 </section>
 
 </main>

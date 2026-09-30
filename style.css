@@ -62,13 +62,6 @@ body {
   cursor: pointer;
 }
 
-.build-info {
-  text-align: center;
-  color: #98a2ad;
-  font-size: 11px;
-  padding: 10px 0 24px;
-}
-
 .app-title { font-size: 15px; font-weight: 600; display: flex; gap: 6px; align-items: baseline; }
 .app-title .en { font-size: 12px; opacity: 0.85; font-weight: 400; }
 
@@ -194,47 +187,6 @@ select#companyId, select#taxRate, select#signingEngineer {
   display: flex;
   gap: 10px;
   margin: 16px 0 40px;
-}
-
-.photo-add-actions {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-.photo-add-actions .btn-secondary {
-  padding: 9px 10px;
-  font-size: 13px;
-}
-/* label元素默认是行内元素，这里让它看起来、用起来都和按钮一样（可点击、居中、flex等分宽度） */
-/* <label> is inline by default; make it look and behave like the other buttons (clickable, centered, equal flex width) */
-.photo-label {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  cursor: pointer;
-  user-select: none;
-}
-
-/* 隐藏真实的文件选择输入框（配合上面的<label for>使用，点击标签会由浏览器原生转发给它）。
-   这是经过实测在真机浏览器上确认真正生效的"视觉隐藏但仍在渲染树里"写法（俗称sr-only）：
-   同时叠加position/大小裁剪/clip等多种手段，避免单一属性被某些浏览器忽略或覆盖。
-   Hide the real file inputs (paired with the <label for> above — clicking the label
-   natively forwards to it via the browser, not JS). This is the "sr-only" style hiding
-   technique confirmed on real-device testing to actually hide the control — it stacks
-   several different hiding properties together so it isn't left exposed if any single
-   one gets ignored or overridden by a particular mobile browser. */
-.visually-hidden-input {
-  position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
-  padding: 0 !important;
-  margin: -1px !important;
-  overflow: hidden !important;
-  clip: rect(0, 0, 0, 0) !important;
-  clip-path: inset(50%) !important;
-  white-space: nowrap !important;
-  border: 0 !important;
 }
 
 .preview-toolbar { flex-wrap: wrap; }

@@ -88,46 +88,12 @@ const { chromium } = require('playwright');
   const expected = ((12 * 125.5) + 600 + 300) * 1.13;
   if (!grand.includes(expected.toFixed(2))) errors.push('Fee calc mismatch, got ' + grand + ' expected ' + expected.toFixed(2));
 
-  // photo attachments: two separate entry points (camera vs. album), each wired to its own input
-  const cameraCapture = await page.$eval('#photoInputCamera', (el) => el.getAttribute('capture'));
-  const galleryCapture = await page.$eval('#photoInputGallery', (el) => el.getAttribute('capture'));
-  if (cameraCapture !== 'environment') errors.push("Camera input should keep capture='environment', got: " + cameraCapture);
-  if (galleryCapture !== null) errors.push('Gallery input should NOT have a capture attribute (so it opens the photo library), got: ' + galleryCapture);
-
-  // Regression guard: these inputs must stay visually-hidden-but-rendered (NOT display:none).
-  // Some mobile webviews (e.g. WeChat's in-app browser) silently ignore a synthetic .click()
-  // on a display:none file input — Playwright/Chromium does not reproduce that quirk, so this
-  // only catches an accidental revert back to display:none, not the real-device behavior itself.
-  const cameraDisplay = await page.$eval('#photoInputCamera', (el) => getComputedStyle(el).display);
-  const galleryDisplay = await page.$eval('#photoInputGallery', (el) => getComputedStyle(el).display);
-  if (cameraDisplay === 'none') errors.push('Camera input must not use display:none (breaks .click() in some mobile webviews)');
-  if (galleryDisplay === 'none') errors.push('Gallery input must not use display:none (breaks .click() in some mobile webviews)');
-
-  // Regression guard: the native file inputs must be visually collapsed to ~0 size (the
-  // "sr-only" clip technique), not shown at their natural full size — otherwise the raw
-  // "选择文件 / Choose File" native control shows up alongside our styled label buttons,
-  // which is exactly the duplicate-buttons bug reported and fixed in this round.
-  const cameraBox = await page.locator('#photoInputCamera').boundingBox();
-  const galleryBox = await page.locator('#photoInputGallery').boundingBox();
-  if (!cameraBox || cameraBox.width > 2 || cameraBox.height > 2) errors.push('Camera native file input is rendering at full size instead of being visually collapsed: ' + JSON.stringify(cameraBox));
-  if (!galleryBox || galleryBox.width > 2 || galleryBox.height > 2) errors.push('Gallery native file input is rendering at full size instead of being visually collapsed: ' + JSON.stringify(galleryBox));
-
-  const fileInput = await page.$('#photoInputGallery');
+  // photo upload
+  const fileInput = await page.$('#photoInput');
   await fileInput.setInputFiles('/tmp/test-photo.jpg');
   await page.waitForTimeout(300);
   const thumbCount = await page.$$eval('.photo-thumb', (els) => els.length);
   if (thumbCount !== 1) errors.push('Photo upload failed, thumbCount=' + thumbCount);
-
-  // "choose from album" button should trigger the gallery (no-capture) input, not the camera input
-  const [galleryChooser] = await Promise.all([
-    page.waitForEvent('filechooser'),
-    page.click('#choosePhotoBtn')
-  ]);
-  if (galleryChooser.isMultiple() !== true) errors.push('Album picker should support multi-select');
-  await galleryChooser.setFiles('/tmp/test-photo.jpg');
-  await page.waitForTimeout(300);
-  const thumbCountAfterAlbumBtn = await page.$$eval('.photo-thumb', (els) => els.length);
-  if (thumbCountAfterAlbumBtn !== 2) errors.push('Choose-from-album button did not add a photo, thumbCount=' + thumbCountAfterAlbumBtn);
 
   // proceed to sign (engineer first)
   await page.click('#proceedToSignBtn');
