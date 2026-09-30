@@ -103,6 +103,15 @@ const { chromium } = require('playwright');
   if (cameraDisplay === 'none') errors.push('Camera input must not use display:none (breaks .click() in some mobile webviews)');
   if (galleryDisplay === 'none') errors.push('Gallery input must not use display:none (breaks .click() in some mobile webviews)');
 
+  // Regression guard: the native file inputs must be visually collapsed to ~0 size (the
+  // "sr-only" clip technique), not shown at their natural full size — otherwise the raw
+  // "选择文件 / Choose File" native control shows up alongside our styled label buttons,
+  // which is exactly the duplicate-buttons bug reported and fixed in this round.
+  const cameraBox = await page.locator('#photoInputCamera').boundingBox();
+  const galleryBox = await page.locator('#photoInputGallery').boundingBox();
+  if (!cameraBox || cameraBox.width > 2 || cameraBox.height > 2) errors.push('Camera native file input is rendering at full size instead of being visually collapsed: ' + JSON.stringify(cameraBox));
+  if (!galleryBox || galleryBox.width > 2 || galleryBox.height > 2) errors.push('Gallery native file input is rendering at full size instead of being visually collapsed: ' + JSON.stringify(galleryBox));
+
   const fileInput = await page.$('#photoInputGallery');
   await fileInput.setInputFiles('/tmp/test-photo.jpg');
   await page.waitForTimeout(300);
