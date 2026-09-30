@@ -253,8 +253,8 @@
            and is used for picking from the photo library (supports multi-select). They're kept separate
            because phones/browsers are inconsistent about offering both camera and gallery from a single
            input, so two dedicated buttons each drive their own input for reliable behavior either way. -->
-      <input type="file" id="photoInputCamera" accept="image/*" capture="environment" style="display:none;" />
-      <input type="file" id="photoInputGallery" accept="image/*" multiple style="display:none;" />
+      <input type="file" id="photoInputCamera" accept="image/*" capture="environment" class="visually-hidden-input" />
+      <input type="file" id="photoInputGallery" accept="image/*" multiple class="visually-hidden-input" />
       <div id="photoPreview" class="photo-grid"></div>
     </fieldset>
 

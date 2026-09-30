@@ -199,6 +199,26 @@ select#companyId, select#taxRate, select#signingEngineer {
   font-size: 13px;
 }
 
+/* 隐藏真实的文件选择输入框，但保持它在渲染树里（不用display:none）。
+   某些手机浏览器/内置浏览器（比如微信内置浏览器）对"display:none的input
+   调用.click()"会直接不响应，必须让它仍然被渲染（哪怕视觉上不可见），
+   点击才能可靠地弹出系统的拍照/相册选择界面。
+   Hide the real file inputs but keep them in the render tree (not display:none).
+   Some mobile browsers/embedded webviews (e.g. WeChat's in-app browser) silently
+   ignore a .click() call on a display:none input — it must still be rendered
+   (even if invisible) for the click to reliably open the camera/photo picker. */
+.visually-hidden-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .preview-toolbar { flex-wrap: wrap; }
 .preview-toolbar button { flex: 1 1 40%; }
 

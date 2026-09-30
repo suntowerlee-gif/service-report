@@ -94,6 +94,15 @@ const { chromium } = require('playwright');
   if (cameraCapture !== 'environment') errors.push("Camera input should keep capture='environment', got: " + cameraCapture);
   if (galleryCapture !== null) errors.push('Gallery input should NOT have a capture attribute (so it opens the photo library), got: ' + galleryCapture);
 
+  // Regression guard: these inputs must stay visually-hidden-but-rendered (NOT display:none).
+  // Some mobile webviews (e.g. WeChat's in-app browser) silently ignore a synthetic .click()
+  // on a display:none file input — Playwright/Chromium does not reproduce that quirk, so this
+  // only catches an accidental revert back to display:none, not the real-device behavior itself.
+  const cameraDisplay = await page.$eval('#photoInputCamera', (el) => getComputedStyle(el).display);
+  const galleryDisplay = await page.$eval('#photoInputGallery', (el) => getComputedStyle(el).display);
+  if (cameraDisplay === 'none') errors.push('Camera input must not use display:none (breaks .click() in some mobile webviews)');
+  if (galleryDisplay === 'none') errors.push('Gallery input must not use display:none (breaks .click() in some mobile webviews)');
+
   const fileInput = await page.$('#photoInputGallery');
   await fileInput.setInputFiles('/tmp/test-photo.jpg');
   await page.waitForTimeout(300);
