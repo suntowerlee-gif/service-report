@@ -242,7 +242,19 @@
 
     <fieldset class="card">
       <legend>图片附件 Photo Attachments <span class="tag-optional">选填 Optional</span></legend>
-      <input type="file" id="photoInput" accept="image/*" multiple />
+      <div class="photo-add-actions">
+        <button type="button" id="takePhotoBtn" class="btn-secondary">📷 拍照 Take Photo</button>
+        <button type="button" id="choosePhotoBtn" class="btn-secondary">🖼️ 从相册选择 Choose from Album</button>
+      </div>
+      <!-- 两个独立的文件输入：一个强制拉起相机现场拍照，一个不带capture属性专门用于打开相册多选；
+           分开做是因为不同手机系统/浏览器对"同一个输入框能否既拍照又选相册"的支持并不一致，
+           拆成两个按钮各自触发对应的输入框，才能保证两种方式都稳定可用。
+           Two separate file inputs: one forces the camera (capture), one has no capture attribute
+           and is used for picking from the photo library (supports multi-select). They're kept separate
+           because phones/browsers are inconsistent about offering both camera and gallery from a single
+           input, so two dedicated buttons each drive their own input for reliable behavior either way. -->
+      <input type="file" id="photoInputCamera" accept="image/*" capture="environment" style="display:none;" />
+      <input type="file" id="photoInputGallery" accept="image/*" multiple style="display:none;" />
       <div id="photoPreview" class="photo-grid"></div>
     </fieldset>
 

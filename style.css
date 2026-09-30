@@ -189,6 +189,16 @@ select#companyId, select#taxRate, select#signingEngineer {
   margin: 16px 0 40px;
 }
 
+.photo-add-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.photo-add-actions .btn-secondary {
+  padding: 9px 10px;
+  font-size: 13px;
+}
+
 .preview-toolbar { flex-wrap: wrap; }
 .preview-toolbar button { flex: 1 1 40%; }
 

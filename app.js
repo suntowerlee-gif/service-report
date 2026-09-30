@@ -175,7 +175,7 @@
 
   // ---------- 图片附件 Photo attachments ----------
   function bindPhotoInput() {
-    $("#photoInput").addEventListener("change", (e) => {
+    function handlePhotoFiles(e) {
       const files = Array.from(e.target.files || []);
       files.forEach((file) => {
         const reader = new FileReader();
@@ -186,7 +186,11 @@
         reader.readAsDataURL(file);
       });
       e.target.value = "";
-    });
+    }
+    $("#photoInputCamera").addEventListener("change", handlePhotoFiles);
+    $("#photoInputGallery").addEventListener("change", handlePhotoFiles);
+    $("#takePhotoBtn").addEventListener("click", () => $("#photoInputCamera").click());
+    $("#choosePhotoBtn").addEventListener("click", () => $("#photoInputGallery").click());
   }
 
   function renderPhotoPreview() {

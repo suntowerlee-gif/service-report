@@ -88,12 +88,28 @@ const { chromium } = require('playwright');
   const expected = ((12 * 125.5) + 600 + 300) * 1.13;
   if (!grand.includes(expected.toFixed(2))) errors.push('Fee calc mismatch, got ' + grand + ' expected ' + expected.toFixed(2));
 
-  // photo upload
-  const fileInput = await page.$('#photoInput');
+  // photo attachments: two separate entry points (camera vs. album), each wired to its own input
+  const cameraCapture = await page.$eval('#photoInputCamera', (el) => el.getAttribute('capture'));
+  const galleryCapture = await page.$eval('#photoInputGallery', (el) => el.getAttribute('capture'));
+  if (cameraCapture !== 'environment') errors.push("Camera input should keep capture='environment', got: " + cameraCapture);
+  if (galleryCapture !== null) errors.push('Gallery input should NOT have a capture attribute (so it opens the photo library), got: ' + galleryCapture);
+
+  const fileInput = await page.$('#photoInputGallery');
   await fileInput.setInputFiles('/tmp/test-photo.jpg');
   await page.waitForTimeout(300);
   const thumbCount = await page.$$eval('.photo-thumb', (els) => els.length);
   if (thumbCount !== 1) errors.push('Photo upload failed, thumbCount=' + thumbCount);
+
+  // "choose from album" button should trigger the gallery (no-capture) input, not the camera input
+  const [galleryChooser] = await Promise.all([
+    page.waitForEvent('filechooser'),
+    page.click('#choosePhotoBtn')
+  ]);
+  if (galleryChooser.isMultiple() !== true) errors.push('Album picker should support multi-select');
+  await galleryChooser.setFiles('/tmp/test-photo.jpg');
+  await page.waitForTimeout(300);
+  const thumbCountAfterAlbumBtn = await page.$$eval('.photo-thumb', (els) => els.length);
+  if (thumbCountAfterAlbumBtn !== 2) errors.push('Choose-from-album button did not add a photo, thumbCount=' + thumbCountAfterAlbumBtn);
 
   // proceed to sign (engineer first)
   await page.click('#proceedToSignBtn');

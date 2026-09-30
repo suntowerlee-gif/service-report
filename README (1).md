@@ -1,72 +1,56 @@
-# 静默同步到GitHub — 部署步骤（已按您的仓库信息定制）
+# 售后服务报告工具 Service Report PWA
 
-签字生成的报告要"工程师手机联网后自动、静默地"备份进一个GitHub仓库，但手机端（公开的GitHub Pages网站）绝不能直接持有任何能写入GitHub的密钥——任何人打开网址、查看网页源码，就能拿到这个密钥，从而获得你仓库的写入权限。
+无纸化移动端售后服务报告工具。工程师在手机浏览器中填写报告、上传照片、双方手写签名，本地生成 PDF / 图片，用于转发客户或上传 CRM。数据全部存储在手机本地（IndexedDB），不依赖任何后端服务器或第三方平台账号。
 
-解决办法：中间加一层免费的 **Cloudflare Worker**。它替工程师的手机保管GitHub密钥，手机只知道Worker的网址和一个普通口令（不是GitHub密钥，泄露的最坏后果只是有人能往下面这个专用仓库里灌垃圾文件，不会危及你的GitHub账号）。
+## 目录结构
 
-整个过程配置一次即可，之后工程师完全无感：签完字，手机联网时自动同步；离线时先存本地，下次联网自动补传；同步状态会在"历史"列表里用小徽标显示（☁已同步 / ⏳待同步）。
-
-您已经建好了两个仓库、也已有Cloudflare账号，下面步骤直接按您的实际信息写好了，照抄即可：
-
-- 公开网站仓库（GitHub Pages，已有，不用动）：`suntowerlee-gif/service-report`
-- 私有报告仓库（存签字报告，已建好）：`suntowerlee-gif/servicereportstore`
-- APP_TOKEN（已为您生成好，`js/sync-config.js` 里也已经填好了这个值）：
-  ```
-  tK1HVjj3eZfv3tANdHFRGf9plWfHitzNZ6mUXsUf
-  ```
-
-## 第一步：确认私有仓库的默认分支名
-
-打开 https://github.com/suntowerlee-gif/servicereportstore ，看一眼默认分支叫什么（新建的仓库一般是 `main`，如果是 `master` 请在下面第三步第4点把 REPO_BRANCH 改成实际的名字）。
-
-## 第二步：生成一个"细粒度"GitHub令牌，只授权这一个私有仓库
-
-1. GitHub 头像 → Settings → Developer settings → Personal access tokens → **Fine-grained tokens** → Generate new token。
-2. Repository access 选择 "Only select repositories"，只勾选 `servicereportstore`（**不要**勾选 `service-report` 这个公开仓库）。
-3. Permissions 里只给 **Contents: Read and write**，其他都不要给。
-4. 生成后复制这个令牌（形如 `github_pat_xxxx`），只会显示一次，先存到安全的地方（比如密码管理器），下一步要填到Worker里。
-
-## 第三步：部署Cloudflare Worker
-
-1. 打开 https://dash.cloudflare.com ，登录您已有的账号。
-2. 左侧菜单 Workers & Pages → Create → Create Worker。名字随意，例如 `service-report-sync`，点 Deploy 先生成一个默认页面。
-3. 点进这个Worker → Edit code（或 Quick edit），把本项目 `cloudflare-worker/worker.js` 的全部内容复制粘贴进去，替换默认代码，点 Save and deploy。
-4. 回到Worker详情页 → Settings → Variables and Secrets，新增以下变量（**GITHUB_TOKEN 和 APP_TOKEN 请选择 "Encrypt" 加密保存**，直接照抄下表）：
-
-   | 变量名 | 值 | 是否加密 |
-   |---|---|---|
-   | GITHUB_TOKEN | 第二步生成的 `github_pat_xxxx` | 是，加密 |
-   | REPO_OWNER | `suntowerlee-gif` | 否 |
-   | REPO_NAME | `servicereportstore` | 否 |
-   | REPO_BRANCH | `main`（如果第一步看到的不是main，改成实际的） | 否 |
-   | APP_TOKEN | `tK1HVjj3eZfv3tANdHFRGf9plWfHitzNZ6mUXsUf` | 是，加密 |
-
-5. 保存后，Worker会自动重新部署。记下Worker的访问地址，形如：
-   `https://service-report-sync.你的子域名.workers.dev`
-
-## 第四步：把Worker地址填进PWA项目
-
-打开本项目 `js/sync-config.js`（APP_TOKEN已经帮您填好了，只需要填这一行）：
-
-```js
-const SYNC_CONFIG = {
-  endpoint: "https://service-report-sync.你的子域名.workers.dev",  // ← 填第三步第5点拿到的地址
-  appToken: "tK1HVjj3eZfv3tANdHFRGf9plWfHitzNZ6mUXsUf"  // 已填好，不用改
-};
+```
+index.html          主页面（新建报告 / 签字 / 预览 / 历史 四个视图）
+manifest.json        PWA 安装配置
+service-worker.js    离线缓存（首次联网访问后即可离线使用）
+css/style.css        样式
+js/company-data.js   三家公司信息、银行账户、五位工程师名单
+js/db.js             IndexedDB 封装（报告存储、编号计数器）
+js/report-number.js  报告编号自动生成规则
+js/template-render.js 报告的可打印/导出模板渲染
+js/app.js             主逻辑：表单、签名、费用计算、导出、历史
+js/sync-config.js     GitHub静默同步配置（留空则该功能关闭，不影响其余功能）
+js/sync.js            GitHub静默同步逻辑（后台POST到Worker、离线重试）
+vendor/               本地化的 jsPDF / html2canvas / signature_pad（离线可用，不依赖CDN）
+icons/                PWA 图标（含 icons/logos/ 三家公司Logo）
+cloudflare-worker/    可选：GitHub静默同步用的中转服务代码与部署说明
 ```
 
-保存后，把这一份新的 `js/sync-config.js` 上传/推送覆盖到 `suntowerlee-gif/service-report` 这个网站仓库里原来的同名文件，GitHub Pages会自动更新。工程师手机上的App下次打开时会拉到新版本（PWA离线缓存机制会检测更新）。
+## 部署方式（重要：需要通过 HTTP(S) 访问，不能直接双击 index.html）
 
-## 验证
+由于用到 Service Worker（离线缓存）和 IndexedDB，浏览器要求页面必须通过 **http:// 或 https://** 访问（`file://` 直接打开会导致离线缓存与部分功能不可用）。但本工具本身**不依赖任何托管平台或账号**，你可以用以下任意一种方式自行部署，成本很低：
 
-找一台手机（或电脑浏览器）打开发布好的网址，走一遍填表签字流程。签完字后，去 https://github.com/suntowerlee-gif/servicereportstore 的 `reports/` 目录刷新看看，应该能看到新增的 `报告编号.json` 和 `报告编号.pdf` 两个文件。App里"历史"列表对应报告旁边也会显示"☁已同步"。
+1. **公司内网/云服务器 + 静态网站托管**（推荐）：将本项目文件夹整体上传到任意支持静态网站的空间（公司自有服务器、内网NAS、或任意云厂商的对象存储静态网站功能均可），用手机浏览器打开对应网址，首次联网加载一次后即可离线使用，并可"添加到主屏幕"当作App使用。
+2. **公司内网簡易服务器**：在办公室一台电脑上用 `python3 -m http.server 8080` 或 `npx serve` 启动一个静态服务器，工程师手机连同一WiFi，用浏览器访问该电脑的局域网IP（如 `http://192.168.1.5:8080`）打开一次并"添加到主屏幕"，之后出差在客户现场即可离线使用（无需联网、无需内网）。
+3. **HTTPS**：如需要在手机上使用"分享"到微信/企业微信等系统分享功能（Web Share API），以及更完整的PWA安装体验，建议部署在HTTPS域名下（自签名证书或公司已有的域名均可）；纯离线填表签字生成PDF/图片功能在HTTP下同样可用。
 
-## 关于安全性的说明
+首次用手机浏览器打开地址后，建议点击浏览器"添加到主屏幕"（iOS Safari）或"安装应用"（Android Chrome），之后即可像App一样离线打开使用。
 
-- 手机端代码里唯一暴露的是上面这个 APP_TOKEN 和Worker网址，不是GitHub密钥本身。即使有人从网页源码里看到这个口令，最多只能往 `servicereportstore` 这一个私有仓库的 `reports/` 目录里提交文件（Worker代码里做了路径限制），拿不到您GitHub账号的其它任何权限，也看不到仓库里已有的内容。
-- 如果担心被滥用刷垃圾文件，可以在 Cloudflare Worker 的 Settings 里额外开启 Rate Limiting（免费额度内可用），或随时更换 APP_TOKEN（改一下Worker的环境变量、再改一下 `js/sync-config.js` 里的对应值重新发布即可，工程师无感）。
-- 建议部署验证成功后，把 `worker.js` 里的 `Access-Control-Allow-Origin: "*"` 改成 `"https://suntowerlee-gif.github.io"`，这样就只有您自己这个网站能调用这个Worker了（改完需要在Cloudflare重新 Save and deploy 一次）。
+## 功能说明
 
-## 这个功能不是必须的
+- **新建报告**：选择所属公司（自动带出页眉、银行账户信息）与参与工程师，按红色（必填）/黄色（选填）字段填写模板对应内容，费用区支持备件费（表格数量×单价）、工时费（小时×单价）、上门费（自由金额）、税率下拉（0/1/6/13%），可勾选"按照合同约定付费"以文字替代自动汇总金额；支持任意数量图片上传。
+- **报告编号**：自动生成，规则为 `公司缩写 + 日期(YYYYMMDD) + 当日序号(2位) + 工程师姓名缩写`，例如 `STD2026091601YWX`。同一公司同一天按顺序递增，序号计数器保存在手机本地。
+- **签字**：客户和工程师（多位工程师参与时任选1位签字）在触屏上手写签名，完成后自动记录时间戳作为签署时间；签字完成后报告自动锁定，不可再编辑，如需变更需新建一份报告重新签字。
+- **导出**：生成与源模板一致的双语（中英对照）PDF 和 PNG 图片，可下载或通过系统分享面板（微信/邮箱/企业微信等，取决于手机系统支持情况）转发客户；工程师另行下载后手动上传至CRM。
+- **历史**：本地保存全部已生成报告，可随时查看、重新导出；配置了自动同步后会显示"☁已同步/⏳待同步"徽标。
+- **自动同步到GitHub（可选）**：签字生成报告后，若手机当前联网，会在后台静默把报告JSON和PDF同步进一个独立的私有GitHub仓库，无需工程师任何操作；离线时先存本地，下次联网自动补传。部署步骤见 `cloudflare-worker/README.md`；不配置这项，工具其余功能完全不受影响。
 
-如果暂时不想折腾这一套，把 `js/sync-config.js` 里的 `endpoint` 留空即可——整个App其余功能完全不受影响，工程师照常签字生成报告、手动导出转发、自行上传CRM，和没有这个功能时完全一样。
+## 已知限制
+
+- 未配置自动同步时，数据仅保存在当前手机浏览器本地（IndexedDB），换手机、清除浏览器数据或卸载浏览器会导致历史报告丢失，请工程师养成签字后及时导出/转发/上传CRM的习惯。
+- "分享"按钮依赖浏览器 Web Share API，部分安卓浏览器或HTTP（非HTTPS）环境下可能不支持，此时请使用"导出PDF/导出图片"下载后手动分享。
+- 多工程师共同完成一次服务时，全部工程师会记录在报告"Engineer"栏，但系统仅需其中1人在"工程师签字人"下拉中选中后完成手写签字。
+
+## 本地开发/测试
+
+```bash
+npm install        # 安装 jsPDF / html2canvas / signature_pad（仅开发/构建vendor文件时需要）
+python3 -m http.server 8080   # 任意静态服务器均可，无需构建步骤
+```
+
+`test/e2e.js` 是使用 Playwright 编写的端到端测试脚本，覆盖填表校验、费用计算、报告编号生成、签名、导出PDF/图片、历史列表、离线加载等流程；`test/sync-test.js` 配合 `test/mock-worker.js`（本地模拟中转服务）验证自动同步/离线重试逻辑。均可作为回归测试参考（运行需要本地安装 `playwright` 并配置好 Chromium 可执行文件路径）。
