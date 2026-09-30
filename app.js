@@ -187,10 +187,13 @@
       });
       e.target.value = "";
     }
+    // 触发文件选择改由 index.html 里的 <label for="..."> 原生完成，
+    // 不再需要JS去调用 input.click()（原来的写法在部分手机浏览器里不可靠）。
+    // Triggering file selection is now handled natively by the <label for="...">
+    // elements in index.html — no longer needs JS to call input.click() (the old
+    // approach proved unreliable in some mobile browsers).
     $("#photoInputCamera").addEventListener("change", handlePhotoFiles);
     $("#photoInputGallery").addEventListener("change", handlePhotoFiles);
-    $("#takePhotoBtn").addEventListener("click", () => $("#photoInputCamera").click());
-    $("#choosePhotoBtn").addEventListener("click", () => $("#photoInputGallery").click());
   }
 
   function renderPhotoPreview() {

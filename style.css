@@ -198,25 +198,32 @@ select#companyId, select#taxRate, select#signingEngineer {
   padding: 9px 10px;
   font-size: 13px;
 }
+/* label元素默认是行内元素，这里让它看起来、用起来都和按钮一样（可点击、居中、flex等分宽度） */
+/* <label> is inline by default; make it look and behave like the other buttons (clickable, centered, equal flex width) */
+.photo-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+}
 
-/* 隐藏真实的文件选择输入框，但保持它在渲染树里（不用display:none）。
-   某些手机浏览器/内置浏览器（比如微信内置浏览器）对"display:none的input
-   调用.click()"会直接不响应，必须让它仍然被渲染（哪怕视觉上不可见），
-   点击才能可靠地弹出系统的拍照/相册选择界面。
-   Hide the real file inputs but keep them in the render tree (not display:none).
-   Some mobile browsers/embedded webviews (e.g. WeChat's in-app browser) silently
-   ignore a .click() call on a display:none input — it must still be rendered
-   (even if invisible) for the click to reliably open the camera/photo picker. */
+/* 隐藏真实的文件选择输入框（配合上面的<label for>使用，点击标签会由浏览器原生转发给它）。
+   用opacity:0而不是display:none/visibility:hidden，是几乎所有浏览器和手机内置浏览器
+   都兼容良好的隐藏方式，不会影响<label for>原生点击转发的可靠性。
+   Hide the real file inputs (paired with the <label for> above — clicking the label
+   natively forwards to it via the browser, not JS). opacity:0 is used instead of
+   display:none/visibility:hidden because it's the hiding technique with the broadest,
+   most reliable compatibility across browsers and mobile in-app webviews, without
+   affecting the native label-click forwarding. */
 .visually-hidden-input {
   position: absolute;
+  opacity: 0;
   width: 1px;
   height: 1px;
-  padding: 0;
-  margin: -1px;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+  z-index: -1;
 }
 
 .preview-toolbar { flex-wrap: wrap; }
