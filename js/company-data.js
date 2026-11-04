@@ -63,7 +63,8 @@ const ENGINEERS = [
   { name: "尹文宣", initials: "YWX" },
   { name: "何键", initials: "HJ" },
   { name: "李松涛", initials: "LST" },
-  { name: "郭峰", initials: "GF" }
+  { name: "郭峰", initials: "GF" },
+  { name: "黄正胜", initials: "HZS" }
 ];
 
 const TAX_RATES = [0, 0.01, 0.06, 0.13];
