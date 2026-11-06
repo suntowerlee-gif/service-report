@@ -55,6 +55,25 @@ const COMPANIES = [
       accountNo: "640401612",
       bankCode: "305651000884"
     }
+  },
+  {
+    id: "YJC",
+    nameCn: "成都市温江区源璟诚商贸部",
+    nameEn: "Chengdu Wenjiang Yuanjingcheng Trading Firm",
+    addressCn: "四川省成都市温江区天府街道科兴路西段199号",
+    addressEn: "No.199 West Kexing Rd, Tianfu Subdistrict, Wenjiang District, Chengdu, Sichuan, China",
+    phone: "13551226530",
+    // 该公司没有提供邮编/传真/服务热线，留空即可，报告里对应几行会自动显示为空白
+    // No postal code / fax / hotline were provided for this company — left blank;
+    // the corresponding lines on the report render empty automatically.
+    logo: "",
+    bank: {
+      accountName: "成都市温江区源璟诚商贸部（个体工商户）",
+      bankName: "中国民生银行股份有限公司成都科华支行",
+      accountNo: "644953432"
+      // 未提供行号/Bank Code，留空即可，报告里这一行会自动不显示
+      // No bank routing code was provided — left out; that line is omitted automatically on the report.
+    }
   }
 ];
 

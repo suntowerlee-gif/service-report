@@ -8,6 +8,13 @@
   let engineerPad = null;
   let draftReportNo = null; // 生成后暂存，避免重复占用序号 / cache once generated so we don't burn sequence numbers twice
   let currentPreviewId = null;
+  // 当前正在编辑的"保存草稿"记录的id（区别于上面的draftReportNo——那个是签字阶段
+  // 预先占用的正式报告编号；这里是填表阶段未完成时保存的草稿，还没有正式编号）。
+  // The id of the "saved draft" record currently being edited (distinct from
+  // draftReportNo above, which is the official report number reserved once signing
+  // starts; this is an incomplete, not-yet-signed draft saved mid-filling, with no
+  // official report number yet).
+  let currentDraftId = null;
 
   const $ = (sel) => document.querySelector(sel);
   const $all = (sel) => Array.from(document.querySelectorAll(sel));
@@ -242,6 +249,7 @@
     $("#byContract").addEventListener("change", recalcFees);
     bindPhotoInput();
     $("#proceedToSignBtn").addEventListener("click", onProceedToSign);
+    $("#saveDraftBtn").addEventListener("click", onSaveDraft);
   }
 
   function getRequiredFieldIds() {
@@ -427,6 +435,97 @@
     };
   }
 
+  // ---------- 保存草稿 Save draft ----------
+  // 填写到一半、还没走到签字流程时，随时可以保存草稿；草稿存在本机IndexedDB里，
+  // 在"历史"列表里能看到并继续编辑。草稿本身不占用正式报告编号（编号在真正进入
+  // 签字流程时才生成），一旦完成签字生成正式报告，对应的草稿记录会被自动删除，
+  // 历史列表里就只会看到那份正式报告，不会同时留下一份多余的草稿。
+  // Can be saved at any time while still filling in the form, before signing starts.
+  // The draft lives in local IndexedDB and shows up in the History list to resume later.
+  // A draft never consumes an official report number (that's only reserved once signing
+  // actually starts). Once signing completes, the matching draft record is deleted
+  // automatically, so History ends up showing just the final report, not a leftover draft.
+  async function onSaveDraft() {
+    if (!currentDraftId) currentDraftId = "DRAFT-" + Date.now();
+    const now = new Date().toISOString();
+    const existing = await getReport(currentDraftId);
+    const draft = Object.assign({}, collectReportFields(), {
+      id: currentDraftId,
+      reportNo: "",
+      isDraft: true,
+      locked: false,
+      createdAt: (existing && existing.createdAt) || now,
+      updatedAt: now
+    });
+    await saveReport(draft);
+    alert("草稿已保存，可在「历史」中继续编辑 / Draft saved — resume it anytime from History.");
+    if ($("#history-view").classList.contains("active")) renderHistory();
+  }
+
+  // 把一份已保存的草稿数据重新填回表单，供继续编辑
+  // Repopulates the form from a saved draft so editing can continue
+  function populateFormFromDraft(d) {
+    currentDraftId = d.id;
+    draftReportNo = null;
+    $("#reportNo").value = "";
+
+    $("#companyId").value = d.companyId || "";
+
+    $all('input[name="engineer"]').forEach((c) => {
+      c.checked = (d.engineers || []).includes(c.value);
+    });
+    populateSigningEngineerSelect();
+    $("#signingEngineer").value = d.signingEngineer || "";
+
+    $("#customer").value = d.customer || "";
+    $("#deptAdd").value = d.deptAdd || "";
+    $("#operator").value = d.operator || "";
+    $("#mobile").value = d.mobile || "";
+    $("#email").value = d.email || "";
+    $("#province").value = d.province || "";
+    $("#model").value = d.model || "";
+    $("#serialNo").value = d.serialNo || "";
+    $("#computer").value = d.computer || "";
+    $("#servTag").value = d.servTag || "";
+    $("#software").value = d.software || "";
+    $("#os").value = d.os || "";
+    $("#contractNo").value = d.contractNo || "";
+    $("#notification").value = d.notification || "";
+
+    $all('input[name="serviceType"]').forEach((c) => {
+      c.checked = (d.serviceType || []).includes(c.value);
+    });
+
+    $("#issue").value = d.issue || "";
+    $("#actionTaken").value = d.actionTaken || "";
+    $("#results").value = d.results || "";
+    $("#engineerAdvice").value = d.engineerAdvice || "";
+
+    $("#orderReceivedDate").value = d.orderReceivedDate || "";
+    $("#startTravelDate").value = d.startTravelDate || "";
+    $("#onSiteDate").value = d.onSiteDate || "";
+    $("#workStart").value = d.workStart || "";
+    $("#workEnd").value = d.workEnd || "";
+    updateTravelTime();
+    updateWorkingHours();
+    $("#totalSupportHours").value = d.totalSupportHours || "";
+    $("#waitingHours").value = d.waitingHours || "";
+
+    parts = (d.parts && d.parts.length) ? d.parts.map((p) => Object.assign({}, p)) : [];
+    renderPartsTable();
+    if (!parts.length) addPartRow();
+
+    $("#laborHours").value = d.laborHours || "0";
+    $("#laborRate").value = d.laborRate || "0";
+    $("#basicPrice").value = d.basicPrice || "0";
+    $("#taxRate").value = (d.taxRate !== undefined && d.taxRate !== null) ? d.taxRate : "0.13";
+    $("#byContract").checked = !!d.byContract;
+    recalcFees();
+
+    photos = (d.photos || []).slice();
+    renderPhotoPreview();
+  }
+
   // 客户签字前的预览草稿：不要求签字齐全，不落库，仅供内容核对
   // Pre-sign draft preview: doesn't require signatures, isn't saved, just for content review
   function onPreviewReport() {
@@ -482,6 +581,15 @@
     });
 
     await saveReport(report);
+    // 草稿一旦完成签字，就自动"转正"为正式报告：把原来的草稿记录删掉，
+    // 历史列表里只会看到这份正式报告，不会同时留一份多余的草稿副本。
+    // Once a draft is signed, it's promoted into the final report: delete the
+    // original draft record so History shows only the final report, not a
+    // leftover duplicate draft.
+    if (currentDraftId && currentDraftId !== report.id) {
+      await deleteReport(currentDraftId).catch(() => {});
+    }
+    currentDraftId = null;
     resetForm();
     currentPreviewId = report.id;
     renderPreview(report);
@@ -503,6 +611,7 @@
     parts = [];
     photos = [];
     draftReportNo = null;
+    currentDraftId = null;
     $("#reportNo").value = "";
     renderPartsTable();
     renderPhotoPreview();
@@ -609,19 +718,32 @@
       const c = getCompanyById(r.companyId);
       const div = document.createElement("div");
       div.className = "history-item";
-      const syncBadge = syncOn
-        ? (r.synced ? '<span class="sync-badge synced">☁ 已同步</span>' : '<span class="sync-badge pending">⏳ 待同步</span>')
-        : "";
-      div.innerHTML = `
-        <div>
-          <div class="hi-main">${escapeAttr(r.reportNo)} ${syncBadge}</div>
-          <div class="hi-sub">${escapeAttr(r.customer || "")} · ${c ? escapeAttr(c.nameCn) : ""} · ${fmtDateTime(r.createdAt)}</div>
-        </div>
-        <button type="button" data-id="${r.id}">查看 View</button>
-      `;
+      if (r.isDraft) {
+        div.innerHTML = `
+          <div>
+            <div class="hi-main">${escapeAttr(r.customer || "未命名草稿 Untitled draft")} <span class="sync-badge pending">📝 草稿 Draft</span></div>
+            <div class="hi-sub">${c ? escapeAttr(c.nameCn) : ""} · 最后保存 ${fmtDateTime(r.updatedAt || r.createdAt)}</div>
+          </div>
+          <div class="hi-actions">
+            <button type="button" class="resume-draft-btn" data-id="${r.id}">继续编辑 Resume</button>
+            <button type="button" class="delete-draft-btn" data-id="${r.id}">删除 Delete</button>
+          </div>
+        `;
+      } else {
+        const syncBadge = syncOn
+          ? (r.synced ? '<span class="sync-badge synced">☁ 已同步</span>' : '<span class="sync-badge pending">⏳ 待同步</span>')
+          : "";
+        div.innerHTML = `
+          <div>
+            <div class="hi-main">${escapeAttr(r.reportNo)} ${syncBadge}</div>
+            <div class="hi-sub">${escapeAttr(r.customer || "")} · ${c ? escapeAttr(c.nameCn) : ""} · ${fmtDateTime(r.createdAt)}</div>
+          </div>
+          <button type="button" class="view-report-btn" data-id="${r.id}">查看 View</button>
+        `;
+      }
       wrap.appendChild(div);
     });
-    wrap.querySelectorAll("button[data-id]").forEach((btn) => {
+    wrap.querySelectorAll(".view-report-btn").forEach((btn) => {
       btn.addEventListener("click", async () => {
         const r = await getReport(btn.dataset.id);
         if (!r) return;
@@ -629,6 +751,25 @@
         renderPreview(r);
         setPreviewMode("final");
         showView("preview-view");
+      });
+    });
+    wrap.querySelectorAll(".resume-draft-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const r = await getReport(btn.dataset.id);
+        if (!r) return;
+        populateFormFromDraft(r);
+        showView("form-view");
+        setActiveTabByView("form-view");
+      });
+    });
+    wrap.querySelectorAll(".delete-draft-btn").forEach((btn) => {
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const ok = confirm("确定删除这份草稿吗？删除后不可恢复 / Delete this draft? This cannot be undone.");
+        if (!ok) return;
+        await deleteReport(btn.dataset.id);
+        if (currentDraftId === btn.dataset.id) currentDraftId = null;
+        renderHistory();
       });
     });
   }
