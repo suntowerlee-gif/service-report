@@ -10,7 +10,7 @@ const { chromium } = require('playwright');
   page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
   page.on('console', (msg) => {
     if (msg.type() !== 'error') return;
-    if (/ERR_TUNNEL_CONNECTION_FAILED|workers\.dev/.test(msg.text())) return;
+    if (/ERR_TUNNEL_CONNECTION_FAILED|workers\.dev|sync\.zkpykj\.com/.test(msg.text())) return;
     errors.push('console.error: ' + msg.text());
   });
   page.on('dialog', async (dialog) => {

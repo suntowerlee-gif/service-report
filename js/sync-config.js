@@ -8,9 +8,17 @@
 // the tool works fully without this, engineers just won't get automatic repo backup
 // and should keep exporting/forwarding manually (same as before this feature existed).
 const SYNC_CONFIG = {
-  // 已填好你实际部署的Worker访问地址。
-  // Already filled in with your actually deployed Worker URL.
-  endpoint: "https://service-report-sync.suntowerlee.workers.dev",
+  // 已填好你实际部署的Worker访问地址——使用绑定在 zkpykj.com 上的自定义域名，
+  // 而不是 Cloudflare 默认分配的 workers.dev 子域名，因为 workers.dev 在中国大陆
+  // 被SNI阻断、无法直接访问，导致之前大部分工程师的报告无法静默同步。自定义域名
+  // 走 Cloudflare 常规边缘节点，大陆通常可以正常访问。
+  // Already filled in with your actually deployed Worker URL — using the custom
+  // domain bound on zkpykj.com instead of Cloudflare's default workers.dev
+  // subdomain, because workers.dev is SNI-blocked in mainland China (this was
+  // why most engineers' reports previously failed to sync silently). The custom
+  // domain rides Cloudflare's normal edge network, which is generally reachable
+  // from mainland China.
+  endpoint: "https://sync.zkpykj.com",
   // 已为你生成好的共享口令（不是GitHub密钥），部署Worker时把它原样填入
   // Worker的 APP_TOKEN 环境变量即可，两边必须完全一致。
   // A shared token already generated for you (not a GitHub credential) — paste this

@@ -16,7 +16,7 @@ const { chromium } = require('playwright');
     // The background sync tries to reach the real Cloudflare Worker URL, which this
     // dev/test sandbox's egress policy blocks — a sandbox limitation, not a product bug
     // (a real phone with normal internet access reaches it fine). Ignore that noise here.
-    if (/ERR_TUNNEL_CONNECTION_FAILED|workers\.dev/.test(msg.text())) return;
+    if (/ERR_TUNNEL_CONNECTION_FAILED|workers\.dev|sync\.zkpykj\.com/.test(msg.text())) return;
     errors.push('console.error: ' + msg.text());
   });
   page.on('dialog', async (dialog) => {
